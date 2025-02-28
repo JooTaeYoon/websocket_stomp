@@ -5,17 +5,16 @@ import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import websocket.project.spring.member.common.auth.JwtTokenProvider;
 import websocket.project.spring.member.domain.Member;
+import websocket.project.spring.member.dto.MemberListResDto;
 import websocket.project.spring.member.dto.MemberLoginReqDto;
 import websocket.project.spring.member.dto.MemberSaveReqDto;
 import websocket.project.spring.member.service.MemberService;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -23,7 +22,7 @@ import java.util.Map;
 public class MemberController {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final  MemberService memberService;
+    private final MemberService memberService;
 
     public MemberController(MemberService memberService, JwtTokenProvider jwtTokenProvider) {
         this.memberService = memberService;
@@ -48,4 +47,9 @@ public class MemberController {
         return new ResponseEntity<>(loginInfo, HttpStatus.OK);
     }
 
+    @GetMapping("/list")
+    public ResponseEntity<?> memberList() {
+        List<MemberListResDto> dtos = memberService.findAll();
+        return new ResponseEntity<>(dtos , HttpStatus.FAILED_DEPENDENCY);
+    }
 }

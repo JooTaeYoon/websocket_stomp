@@ -9,9 +9,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import websocket.project.spring.member.common.configs.SecurityConfigs;
 import websocket.project.spring.member.domain.Member;
+import websocket.project.spring.member.dto.MemberListResDto;
 import websocket.project.spring.member.dto.MemberLoginReqDto;
 import websocket.project.spring.member.dto.MemberSaveReqDto;
 import websocket.project.spring.member.repository.MemberRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional
@@ -51,5 +55,17 @@ public class MemberService {
         return member;
     }
 
+    public List<MemberListResDto> findAll() {
+        List<Member> members = memberRepository.findAll();
+        List<MemberListResDto> memberListResDtos = new ArrayList<>();
+        for (Member m : members) {
+            MemberListResDto memberListResDto = new MemberListResDto();
+            memberListResDto.setId(m.getId());
+            memberListResDto.setName(m.getName());
+            memberListResDto.setEmail(m.getEmail());
+            memberListResDtos.add(memberListResDto);
+        }
+        return memberListResDtos;
+    }
 
 }
