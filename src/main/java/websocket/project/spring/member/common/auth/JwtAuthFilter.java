@@ -49,10 +49,8 @@ public class JwtAuthFilter extends GenericFilter {
                 UserDetails userDetails = new User(claims.getSubject(), "", authorities);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
 //            Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
-                System.out.println("if");
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-            System.out.println("if 밖");
             filterChain.doFilter(request, response);  // filterChain 사용 목적 -> 다시 필터체인으로 돌아 갈때, filterChain.doFilter를 사용 함
 //        request 안에 토큰이 들어가 있음
         } catch (Exception e) {

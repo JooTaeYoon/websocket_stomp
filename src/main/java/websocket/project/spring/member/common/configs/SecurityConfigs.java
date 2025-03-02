@@ -14,6 +14,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import websocket.project.spring.member.common.auth.JwtAuthFilter;
 
+
 import java.util.Arrays;
 
 @Configuration
@@ -42,9 +43,9 @@ public class SecurityConfigs {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-
+        System.out.println("cors !!!");
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("https://localhost:3000"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("*"));  // 모든 HTTP 메서드 허용
         configuration.setAllowedHeaders(Arrays.asList("*"));  // 모든 헤더값 허용
         configuration.setAllowCredentials(true);              // 자격증명허용
@@ -58,4 +59,5 @@ public class SecurityConfigs {
     public PasswordEncoder makePassword() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
+
 }
