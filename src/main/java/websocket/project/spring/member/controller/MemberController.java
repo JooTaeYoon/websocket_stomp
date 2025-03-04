@@ -29,6 +29,7 @@ public class MemberController {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
+
     @PostMapping("/create")
     public ResponseEntity<?> memberCreate(@RequestBody MemberSaveReqDto memberSaveReqDto) throws IllegalAccessException {
         Member member = memberService.create(memberSaveReqDto);
@@ -50,6 +51,10 @@ public class MemberController {
     @GetMapping("/list")
     public ResponseEntity<?> memberList() {
         List<MemberListResDto> dtos = memberService.findAll();
-        return new ResponseEntity<>(dtos , HttpStatus.FAILED_DEPENDENCY);
+        try{
+            return new ResponseEntity<>(dtos , HttpStatus.OK);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
