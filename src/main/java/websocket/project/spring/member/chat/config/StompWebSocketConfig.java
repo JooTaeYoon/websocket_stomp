@@ -1,15 +1,24 @@
 package websocket.project.spring.member.chat.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import websocket.project.spring.member.controller.MemberController;
 
 @Configuration
 @EnableWebSocketMessageBroker
 public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    private final StompHandler stompHandler;
+
+    public StompWebSocketConfig(StompHandler stompHandler) {
+        this.stompHandler = stompHandler;
+    }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -31,4 +40,13 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     }
 
+
+//    웹소켓 요청(connect, subscribe, disconnect)등의 요청시에는 http header등 http 메세지를 넣어 올수 있고,
+//    이를 interceptor인터셉터를 통해 가로채 토큰 등을 검증
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        System.out.println("인터셉터 before");
+        registration.interceptors(stompHandler);
+        System.out.println("인터셉터 after");
+    }
 }
