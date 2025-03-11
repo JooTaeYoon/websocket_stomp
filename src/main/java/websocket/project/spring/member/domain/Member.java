@@ -2,6 +2,7 @@ package websocket.project.spring.member.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import websocket.project.spring.member.common.domain.BaseTimeEntity;
 
 @Entity
 @Builder
@@ -9,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Member {
+public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
