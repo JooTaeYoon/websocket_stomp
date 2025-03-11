@@ -45,8 +45,6 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 //    이를 interceptor인터셉터를 통해 가로채 토큰 등을 검증
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        System.out.println("인터셉터 before");
         registration.interceptors(stompHandler);
-        System.out.println("인터셉터 after");
     }
 }
