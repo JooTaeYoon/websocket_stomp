@@ -20,18 +20,16 @@ public class StompHandler implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        System.out.println("인터셉터 "+message.getHeaders());
         final StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-        System.out.println("요청 : "+accessor.getCommand());
-
+        
         if (StompCommand.CONNECT == accessor.getCommand()) {
-            System.out.println("connect 요청");
+
             String bearerToken = accessor.getFirstNativeHeader("Authorization");
             String token = bearerToken.substring(7);
 
 //            토큰 검증
             Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
-            System.out.println("토큰 검증 완료");
+
         }
 
         return message;
