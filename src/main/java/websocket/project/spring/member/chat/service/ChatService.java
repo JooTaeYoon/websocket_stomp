@@ -10,6 +10,7 @@ import websocket.project.spring.member.chat.domain.ChatParticipant;
 import websocket.project.spring.member.chat.domain.ChatRoom;
 import websocket.project.spring.member.chat.domain.ReadStatus;
 import websocket.project.spring.member.chat.dto.ChatMessageReqDto;
+import websocket.project.spring.member.chat.dto.ChatRoomListResDto;
 import websocket.project.spring.member.chat.repository.ChatMessageRepository;
 import websocket.project.spring.member.chat.repository.ChatParticipantRepository;
 import websocket.project.spring.member.chat.repository.ChatRoomRepository;
@@ -17,6 +18,7 @@ import websocket.project.spring.member.chat.repository.ReadStatusRepository;
 import websocket.project.spring.member.domain.Member;
 import websocket.project.spring.member.repository.MemberRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,6 +77,8 @@ public class ChatService {
         Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(() -> new EntityNotFoundException("이메일이 없네"));
 
+        log.info("SecurityContextHolder.getContext().getAuthentication().getName() : " + SecurityContextHolder.getContext().getAuthentication().getName());
+
 //        채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder().
                 name(chatRoomName).isGroupChat("Y")
@@ -88,5 +92,41 @@ public class ChatService {
                 .build();
         chatParticipantRepository.save(chatParticipant);
     }
+
+
+    public List<ChatRoomListResDto> getGroupChatRooms() {
+        List<ChatRoom> chatRooms = chatRoomRepository.findByIsGroupChat("Y");
+        List<ChatRoomListResDto> dtos = new ArrayList<>();
+        for (ChatRoom c : chatRooms) {
+            ChatRoomListResDto dto = ChatRoomListResDto.builder().
+                    roomId(c.getId()).roomName(c.getName()).
+                    build();
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+
+    public void addParticipantToGroupChat(Long roomId) {
+//        채팅방 조회
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("채팅방이 없네"));
+//        member 조회
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(()-> new EntityNotFoundException("이메일이 또 없네"));
+//        이미 참여자인지 검증
+        Optional<ChatParticipant> participant = chatParticipantRepository.findByChatRoomAndMember(chatRoom, member);
+
+        if (!participant.isPresent()) {
+            addParticipantToRoom(chatRoom, member);
+        }
+//        ChatParticipant 객체 생성 후 DB에 저장
+    }
+
+    public void addParticipantToRoom(ChatRoom chatRoom, Member member){
+        ChatParticipant chatParticipant = ChatParticipant.builder()
+                .chatRoom(chatRoom)
+                .member(member)
+                .build();
+        chatParticipantRepository.save(chatParticipant);
+    }
+
 
 }
