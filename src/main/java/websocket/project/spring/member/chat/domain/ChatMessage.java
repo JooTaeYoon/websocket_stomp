@@ -12,12 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Getter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
+@Getter
 public class ChatMessage extends BaseTimeEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,6 +33,6 @@ public class ChatMessage extends BaseTimeEntity {
     private String content;
 
     @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Builder.Default
     private List<ReadStatus> readStatuses = new ArrayList<>();
-
 }

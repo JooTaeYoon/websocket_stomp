@@ -3,10 +3,9 @@ package websocket.project.spring.member.chat.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
-import websocket.project.spring.member.chat.dto.ChatMessageReqDto;
+import websocket.project.spring.member.chat.dto.ChatMessageDto;
 import websocket.project.spring.member.chat.service.ChatService;
 
 @Controller
@@ -33,7 +32,7 @@ public class StompController {
 
 //    방법2. MessageMapping 어노테이션만 활용.
     @MessageMapping("/{roomId}")
-    public void sendMessage(@DestinationVariable Long roomId, ChatMessageReqDto message) {
+    public void sendMessage(@DestinationVariable Long roomId, ChatMessageDto message) {
         log.info("message: "+message+ " , "+"roomId: "+roomId);
         chatService.saveMessage(roomId, message);
         messageTemplate.convertAndSend("/topic/" + roomId, message);
