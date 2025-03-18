@@ -2,15 +2,19 @@ package websocket.project.spring.member.chat.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 import websocket.project.spring.member.chat.domain.ChatMessage;
 import websocket.project.spring.member.chat.domain.ChatParticipant;
 import websocket.project.spring.member.chat.domain.ChatRoom;
 import websocket.project.spring.member.chat.domain.ReadStatus;
 import websocket.project.spring.member.chat.dto.ChatMessageDto;
 import websocket.project.spring.member.chat.dto.ChatRoomListResDto;
+import websocket.project.spring.member.chat.dto.MyChatListResDto;
 import websocket.project.spring.member.chat.repository.ChatMessageRepository;
 import websocket.project.spring.member.chat.repository.ChatParticipantRepository;
 import websocket.project.spring.member.chat.repository.ChatRoomRepository;
@@ -173,5 +177,54 @@ public class ChatService {
             }
         }
         return false;
+    }
+
+    public void messageRead(Long roomId){
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("멤버 없음"));
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("멤버 낫"));
+        List<ReadStatus> readStatuses = readStatusRepository.findByChatRoomAndMember(chatRoom, member);
+
+        for (ReadStatus read : readStatuses) {
+            read.updateIsRead(true);
+        }
+    }
+
+
+    public List<MyChatListResDto> getMyChatRooms(){
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("멤버낫"));
+        List<ChatParticipant> chatParticipants = chatParticipantRepository.findAllByMember(member);
+        List<MyChatListResDto> chatListResDtos = new ArrayList<>();
+
+        for (ChatParticipant c : chatParticipants) {
+            Long count = readStatusRepository.countByChatRoomAndMemberAndIsReadFalse(c.getChatRoom(), member);
+            MyChatListResDto dto = MyChatListResDto.builder()
+                    .roomId(c.getChatRoom().getId())
+                    .roomName(c.getChatRoom().getName())
+                    .isGroupChat(c.getChatRoom().getIsGroupChat())
+                    .unReadCount(count)
+                    .build();
+            chatListResDtos.add(dto);
+        }
+        return chatListResDtos;
+    }
+
+    public void leaveGroupChatRoom(Long roomId) throws IllegalAccessException {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("없음"));
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("없음"));
+
+        if (chatRoom.getIsGroupChat().equals("N")) {
+            throw new IllegalAccessException("단체 채팅방이 아닙니다");
+        }
+
+        ChatParticipant c = chatParticipantRepository.findByChatRoomAndMember(chatRoom, member).orElseThrow(() -> new EntityNotFoundException("없다고"));
+        chatParticipantRepository.delete(c);
+
+        List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
+        if (chatParticipants.isEmpty()) {
+            chatRoomRepository.delete(chatRoom);
+        }
+
+
+
     }
 }
