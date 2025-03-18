@@ -9,7 +9,7 @@ import websocket.project.spring.member.chat.domain.ChatMessage;
 import websocket.project.spring.member.chat.domain.ChatParticipant;
 import websocket.project.spring.member.chat.domain.ChatRoom;
 import websocket.project.spring.member.chat.domain.ReadStatus;
-import websocket.project.spring.member.chat.dto.ChatMessageReqDto;
+import websocket.project.spring.member.chat.dto.ChatMessageDto;
 import websocket.project.spring.member.chat.dto.ChatRoomListResDto;
 import websocket.project.spring.member.chat.repository.ChatMessageRepository;
 import websocket.project.spring.member.chat.repository.ChatParticipantRepository;
@@ -42,7 +42,7 @@ public class ChatService {
     }
 
 
-    public void saveMessage(Long roomId, ChatMessageReqDto chatMessageReqDto) {
+    public void saveMessage(Long roomId, ChatMessageDto chatMessageReqDto) {
 //        채팅방 조회
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() ->
                 new EntityNotFoundException("room cannot find !")
@@ -110,7 +110,7 @@ public class ChatService {
 //        채팅방 조회
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("채팅방이 없네"));
 //        member 조회
-        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(()-> new EntityNotFoundException("이메일이 또 없네"));
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("이메일이 또 없네"));
 //        이미 참여자인지 검증
         Optional<ChatParticipant> participant = chatParticipantRepository.findByChatRoomAndMember(chatRoom, member);
 
@@ -120,7 +120,7 @@ public class ChatService {
 //        ChatParticipant 객체 생성 후 DB에 저장
     }
 
-    public void addParticipantToRoom(ChatRoom chatRoom, Member member){
+    public void addParticipantToRoom(ChatRoom chatRoom, Member member) {
         ChatParticipant chatParticipant = ChatParticipant.builder()
                 .chatRoom(chatRoom)
                 .member(member)
@@ -128,5 +128,50 @@ public class ChatService {
         chatParticipantRepository.save(chatParticipant);
     }
 
+    public List<ChatMessageDto> getChatHistory(Long roomId) throws IllegalAccessException {
+//        내가 해당 채팅방의 참여자가 아닐 경우 에러
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() ->
+                new EntityNotFoundException("너 해당방에 참여자 아니야"));
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new EntityNotFoundException("너 해당방에 멤버가 아니야"));
+        List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
+        boolean check = false;
 
+        for (ChatParticipant c : chatParticipants) {
+            if (c.getMember().equals(member)) {
+                check = true;
+            }
+        }
+        if(!check) throw new IllegalAccessException("본인이 속하지 않은 채팅방입니다");
+
+//        특정 room에 대한 message 조회
+        List<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomOrderByCreatedTimeAsc(chatRoom);
+        List<ChatMessageDto> chatMessageDtos = new ArrayList<>();
+        for (ChatMessage c: chatMessages){
+            ChatMessageDto chatMessageDto = ChatMessageDto.builder().
+            message(c.getContent()).senderEmail(c.getMember().getEmail()).
+                    build();
+            chatMessageDtos.add(chatMessageDto);
+        }
+        return chatMessageDtos;
+    }
+
+
+    public boolean isRoomParticipant(String email, Long roomId){
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("방 참여자가 아님"));
+        log.info("룸참여자 email: "+email);
+        log.info("뭐야 왜 안 됨?");
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("너도 아니야"));
+
+
+        List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
+
+        for (ChatParticipant c : chatParticipants) {
+            if (c.getMember().equals(member)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

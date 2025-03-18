@@ -5,9 +5,11 @@ import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import websocket.project.spring.member.chat.dto.ChatMessageDto;
 import websocket.project.spring.member.chat.dto.ChatRoomListResDto;
 import websocket.project.spring.member.chat.service.ChatService;
 
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -41,6 +43,14 @@ public class ChatController {
     public ResponseEntity<?> joinGroupChatRoom(@PathVariable Long roomId) {
         chatService.addParticipantToGroupChat(roomId);
         return ResponseEntity.ok().build();
+    }
+
+    //    이전 메시지 조회
+    @GetMapping("/history/{roomId}")
+    public ResponseEntity<?> getChatHistory(@PathVariable Long roomId) throws IllegalAccessException {
+        List<ChatMessageDto> chatMessageDtos = chatService.getChatHistory(roomId);
+//        return ResponseEntity.ok().body(chatMessageDtos);
+        return new ResponseEntity<>(chatMessageDtos, HttpStatus.OK);
     }
 
 }
