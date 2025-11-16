@@ -21,24 +21,24 @@ public class TokenService {
     private final CacheManager cacheManager;
 
     @Cacheable(cacheNames = "accessTokenCache", key = "'token'")
-    public ApiDto getToken(){
+    public ApiDto getToken() {
         ResponseEntity<ApiDto> token = clientFeign.getToken();
-        log.info("토큰 >>> {}",token);
+        log.info("토큰 >>> {}", token);
         return token.getBody();
     }
 
-    public ResponseEntity<?> send(){
+    public ResponseEntity<?> send() {
         ApiDto token = getToken();
         String authHeader = "Bearer " + token.getAccessToken();
         SendRequest sendRequest = new SendRequest();
         sendRequest.setName("이름테스트");
         sendRequest.setPassword("1234");
         Map<String, Object> send = clientFeign.send(authHeader, sendRequest);
-        log.info("send >>> {}",send);
+        log.info("send >>> {}", send);
         return ResponseEntity.ok(send);
     }
 
-    public void tokenCheck(){
-        log.info("token check >>> {}",cacheManager.getCache("accessTokenCache").get("token", Object.class));
+    public void tokenCheck() {
+        log.info("token check >>> {}", cacheManager.getCache("accessTokenCache").get("token", Object.class));
     }
 }
