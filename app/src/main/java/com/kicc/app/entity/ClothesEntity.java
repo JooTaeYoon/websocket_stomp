@@ -1,9 +1,16 @@
 package com.kicc.app.entity;
 
+import com.kicc.app.dto.request.CustomerDtoRequest;
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "clothes")
+@NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@Getter
+@Setter
 public class ClothesEntity {
 
     @Id
@@ -16,4 +23,5 @@ public class ClothesEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
     private CustomerEntity customer;
+
 }
